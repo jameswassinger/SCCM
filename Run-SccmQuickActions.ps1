@@ -15,6 +15,10 @@
 
     .\Run-SCCMQuickActions.ps1 -CollectionName "Test1" -Delete
 
+    .EXAMPLE
+    
+    .\Run-SCCMQuickActions.ps1 
+
 
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
@@ -28,7 +32,7 @@ param(
     [String[]]$ComputerName,
 
     [Parameter(Mandatory=$false, 
-    ParameterSetName="CollectionName")]
+    ParameterSetName="Collection Name")]
     [ValidateNotNull()]
     [String[]]$CollectionName,
 
@@ -36,79 +40,106 @@ param(
     [Switch]$Delete, 
 
     [Parameter(Mandatory=$false)]
-    [Switch]$Add
+    [Switch]$Add,
 
-)    
+    [Parameter(Mandatory=$false)]
+    [Switch]$DeviceCollectionMembership
+
+)
+
+function Get-CMDeviceCollectionMembership {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [String]$ComputerName
+           
+    )
+
+    $DeviceCollections = Get-CMCollection -CollectionType Device
+
+    $DeviceCollections | ForEach-Object {
+        if(Get-CMCollection -Name $_.Name | Get-CMCollectionMember | Where-Object { $_.Name -eq $ComputerName }) {
+            Write-Host "$($_.Name)"
+        }
+    }
+}    
 
 function Delete-Computer {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
         [String[]]$ComputerName
     )
 
-    $ComputerName | ForEach-Object {
-        # exists
-        if(Get-CMDevice -Name $_) {
-            Write-Information -MessageData "$($_) exists in SCCM, Queued for removal" -InformationAction Continue
+    Process {
+
+        $ComputerName | ForEach-Object {
+            # exists
+            if(Get-CMDevice -Name $_) {
+                Write-Information -MessageData "$($_) exists in SCCM, Queued for removal" -InformationAction Continue
             
-            # Removal
-            try {
-                Remove-CMDevice -Name $_ -Force
-            } catch {
-                Write-Warning "Could not removed $($_). Details $($_.Exception.Message)"
-            }
-
-            Write-Information -MessageData " Validation of removal for $($_)..." -InformationAction Continue
-
-            # validation
-            try {
-                if(Get-CMDevice -Name $_) {
-                    Write-Warning "$($_) was NOT removed from SCCM."
-                } else {
-                    Write-Host "$($_) was successfully removed from SCCM." -ForegroundColor Green
+                # Removal
+                try {
+                    Remove-CMDevice -Name $_ -Force
+                } catch {
+                    Write-Warning "Could not removed $($_). Details $($_.Exception.Message)"
                 }
-            } catch {
-                Write-Warning "$($_) could not be removed. Exception Detail $($_.Exception.Message)"
-            }
+
+                Write-Information -MessageData " Validation of removal for $($_)..." -InformationAction Continue
+
+                # validation
+                try {
+                    if(Get-CMDevice -Name $_) {
+                        Write-Warning "$($_) was NOT removed from SCCM."
+                    } else {
+                        Write-Host "$($_) was successfully removed from SCCM." -ForegroundColor Green
+                    }
+                } catch {
+                    Write-Warning "$($_) could not be removed. Exception Detail $($_.Exception.Message)"
+                }
         
-        # no exist
-        } else {
-            Write-Warning "$($_) could not be found."
+            # no exist
+            } else {
+                Write-Warning "$($_) could not be found."
+            }
         }
     }
 }
 
 function Delete-Collection {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,
          HelpMessage="The * wildcard character is accpeted.")]
         [String[]]$CMCollectionName
     )
-
-    # Removal
-    $CMCollectionName | ForEach-Object {
-        if(Get-CMCollection -Name $CMCollectionName) {
-            Write-Information -MessageData "The collection $($_.Name) exists in SCCM, Queued for removal" -InformationAction Continue
-            try {
-                Remove-CMCollection -Name $_ -Force
-            } catch {
-                Write-Warning "Collection $($_) could not be removed. Exception Detail $($_.Exception.Message)"
+    Process {
+        # Removal
+        $CMCollectionName | ForEach-Object {
+            if(Get-CMCollection -Name $CMCollectionName) {
+                Write-Information -MessageData "The collection $($_.Name) exists in SCCM, Queued for removal" -InformationAction Continue
+                try {
+                    Remove-CMCollection -Name $_ -Force
+                } catch {
+                    Write-Warning "Collection $($_) could not be removed. Exception Detail $($_.Exception.Message)"
+                }
+                Write-Information -MessageData " Validation of removal for collection $($_)..." -InformationAction Continue
+                try {
+                    if(Get-CMCollection -Name $_) {
+                        Write-Warning "Collection $($_) was NOT removed from SCCM."
+                    } else {
+                        Write-Host "Collection $($_) was successfully removed from SCCM." -ForegroundColor Green
+                    } 
+                } catch {
+                    Write-Warning "Collection $($_) could not be removed. Exception Detail $($_.Exception.Message)"
+                }
+            # no exists
+            } else {
+                Write-Warning "Collection $($_) could not be found"   
             }
-            Write-Information -MessageData " Validation of removal for collection $($_)..." -InformationAction Continue
-            try {
-                if(Get-CMCollection -Name $_) {
-                    Write-Warning "Collection $($_) was NOT removed from SCCM."
-                } else {
-                    Write-Host "Collection $($_) was successfully removed from SCCM." -ForegroundColor Green
-                } 
-            } catch {
-                Write-Warning "Collection $($_) could not be removed. Exception Detail $($_.Exception.Message)"
-            }
-        # no exists
-        } else {
-            Write-Warning "Collection $($_) could not be found"   
-        }
-      }
+       }
+    }
 }
 
 <#
@@ -171,6 +202,12 @@ if($Delete.IsPresent) {
 
     if($CollectionName) {
         Delete-Collection -CMCollectionName $CollectionName
+    }
+}
+
+if($DeviceCollectionMembership.IsPresent) {
+    if($ComputerName) {
+        Get-CMDeviceCollectionMembership -ComputerName $ComputerName
     }
 }
 
