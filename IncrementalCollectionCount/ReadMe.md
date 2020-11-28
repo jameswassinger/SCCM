@@ -6,8 +6,8 @@ See [SCCM Incremental Updates Collection Maintenance](https://jameswassinger.me/
 
 <p>to use download the scripts.</p>
 
-* .\Get-CMAutoIncCollections -Path <Path_To_Store_Output_File>
-* .\Change-CMAutoIncCollections -Path <Path_To_File_Containing_Collection_Names> -Date <Date_to_Set_Start>
+* .\Get-CMAutoIncCollections -Path Path_To_Store_Output_File
+* .\Change-CMAutoIncCollections -Path Path_To_File_Containing_Collection_Names -Date Date_to_Set_Start
 
 <p>Examples</p>
 * .\Get-CMAutoIncCollections -Path C:\CollectionNames.csv
