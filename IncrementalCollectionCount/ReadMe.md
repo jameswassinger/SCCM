@@ -10,5 +10,6 @@ See [SCCM Incremental Updates Collection Maintenance](https://jameswassinger.me/
 * .\Change-CMAutoIncCollections -Path Path_To_File_Containing_Collection_Names -Date Date_to_Set_Start
 
 <p>Examples</p>
-* .\Get-CMAutoIncCollections -Path C:\CollectionNames.csv
-* .\Change-CMAutoIncCollections -Path C:\CollectionNames.csv -Date "09/27/2018 9:00 AM"
+
+* .\Get-CMAutoIncCollections -Path "C:\CollectionNames.csv"
+* .\Change-CMAutoIncCollections -Path "C:\CollectionNames.csv" -Date "09/27/2018 9:00 AM"
