@@ -7,8 +7,8 @@ See [SCCM Incremental Updates Collection Maintenance](https://jameswassinger.me/
 <p>How To</p>
 <p>Run Get-CMAutoIncCollections.ps1, specify the location where you want the CSV file saved to and the name of the CSV file. After you run the Get-CMAutoIncCollections open the CSV file and remove all the collections found that you DO NOT want to change the schedule for. After review, save and close the CSV file and run Update-CMAutoIncCollections.ps1</p>
 
-* .\Get-CMAutoIncCollections.ps1 [-Path] <string> [<CommonParameters>]
-* .\Update-CMAutoIncCollections.ps1 [-Path] <string> [<CommonParameters>]
+* .\Get-CMAutoIncCollections.ps1 [-Path] <string> <CommonParameters>
+* .\Update-CMAutoIncCollections.ps1 [-Path] <string> <CommonParameters>
 
 <p>Examples</p>
 
