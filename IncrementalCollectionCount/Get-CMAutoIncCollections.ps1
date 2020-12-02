@@ -1,6 +1,4 @@
-﻿#Requires -Version 5.1
-#Requires -RunAsAdministrator
-<#
+﻿<#
 .SYNOPSIS
     Gets all SCCM collections that currently have the Use incremental updates for this collection checked, and outputs the found collection names to a specified CSV file.
 
@@ -13,6 +11,10 @@
 .EXAMPLE
     .\Get-CMAutoIncCollections.ps1 -Path C:\SampleCol.csv
 #>
+
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
+
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory)]

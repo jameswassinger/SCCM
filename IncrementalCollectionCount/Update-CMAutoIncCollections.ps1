@@ -1,6 +1,4 @@
-﻿#Requires -Version 5.1
-#Requires -RunAsAdministrator
-<#
+﻿<#
 .SYNOPSIS
     Updates the collection refresh schedule for the specified Sccm collection names in the provided csv file.
 
@@ -13,6 +11,11 @@
 .EXAMPLE
     .\Update-CMAutoIncCollections.ps1 -Path C:\SampleCol.txt
 #>
+
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
+
+
 [CmdletBinding()]
 Param (
     [Parameter(Mandatory)]
