@@ -1,42 +1,69 @@
-﻿# state the path and file name where you would like to store the output. 
-# file is written to csv. 
-Param ( [string]$Path )
+﻿#Requires -Version 5.1
+#Requires -RunAsAdministrator
+<#
+.SYNOPSIS
+    Gets all SCCM collections that currently have the Use incremental updates for this collection checked, and outputs the found collection names to a specified CSV file.
 
-#Load Configuration Manager PowerShell Module
-Import-module ($Env:SMS_ADMIN_UI_PATH.Substring(0,$Env:SMS_ADMIN_UI_PATH.Length-5)+ '\ConfigurationManager.psd1')
+.DESCRIPTION
+    Gets all SCCM collections that currently have the Use incremental updates for this collection checked, and outputs the found collection names to a specified CSV file.
 
-#Get SiteCode
-$SiteCode = Get-PSDrive -PSProvider CMSITE
-Set-location $SiteCode":"
+.PARAMETER Path
+    Sets the path to the CSV file to output results to.
 
-# The following refresh types exist for ConfigMgr collections
-# 6 = Incremental and Periodic Updates
-# 4 = Incremental Updates Only
-# 2 = Periodic Updates only
-# 1 = Manual Update only
+.EXAMPLE
+    .\Get-CMAutoIncCollections.ps1 -Path C:\SampleCol.csv
+#>
+[CmdletBinding()]
+Param(
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [String]$Path
+
+)
+
+try {
+    Write-Verbose "Load Configuration Manager PowerShell Module"
+    Import-module ($Env:SMS_ADMIN_UI_PATH.Substring(0, $Env:SMS_ADMIN_UI_PATH.Length - 5) + '\ConfigurationManager.psd1') -ErrorAction Stop
+
+    $SiteCode = Get-PSDrive -PSProvider CMSITE -ErrorAction Stop
+    Set-location $SiteCode":" -ErrorAction Stop
+} catch {
+    Write-Output $_.Exception.Message
+}
+
+
+<#
+    The following refresh types exist for ConfigMgr collections
+        6 = Incremental and Periodic Updates
+        4 = Incremental Updates Only
+        2 = Periodic Updates only
+        1 = Manual Update only
+#>
 
 $refreshtypes = "4","6"
 
-# Get the collections from sccm
+Write-Output "Please wait. Getting collection information from SCCM. This may take some time."
 $CollectionsWithIncrement = Get-CMDeviceCollection | Where-Object {$_.RefreshType -in $refreshtypes}
 
-# Store the collections with the "use incremental updates for this collection" option enabled. 
+Write-Verbose "Store the collections with the "use incremental updates for this collection" option enabled."
 $Collections = @()
 
-# Add device collection names to the collections array. 
-foreach ($collection in $CollectionsWithIncrement) {
+Write-Verbose "Add device collection names to the collections array."
+$CollectionsWithIncrement | ForEach-Object {
     $object = New-Object -TypeName PSobject
-    $object| Add-Member -Name CollectionName -value $collection.Name -MemberType NoteProperty
-    #$object| Add-Member -Name CollectionID -value $collection.CollectionID -MemberType NoteProperty
-    #$object| Add-Member -Name MemberCount -value $collection.LocalMemberCount -MemberType NoteProperty
+    $object | Add-Member -Name CollectionName -value $_.Name -MemberType NoteProperty
+    Write-Output "$($_.Name)"
     $collections += $object
 }
 
-# get total count found. 
+Write-Verbose "get total count found."
 $total = $Collections.Count
 
-# immediately display the count of collections with the option enabled. 
-Write-Host "`n`nFound $total Collections with the auto incremental checked.`n`n"
+Write-Verbose "immediately display the count of collections with the option enabled."
+Write-output "`n`nFound $total Collections with the auto incremental checked.`n`n"
 
-# Write the collections names to a file. 
+Write-Verbose "Write the collections names to a file."
 $Collections | Export-Csv $Path -NoTypeInformation
+
+Write-Verbose "Set location back to start."
+Set-Location $PSScriptRoot
