@@ -1,4 +1,4 @@
-fuction Connect-Sccm {
+function Connect-Sccm {
     <#
     .SYNOPSIS
         Establishes a connection to Configuration Manager. 
