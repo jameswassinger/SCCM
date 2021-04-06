@@ -47,7 +47,7 @@ $refreshtypes = "4","6"
 Write-Output "Please wait. Getting collection information from SCCM. This may take some time."
 $CollectionsWithIncrement = Get-CMDeviceCollection | Where-Object {$_.RefreshType -in $refreshtypes}
 
-Write-Verbose "Store the collections with the "use incremental updates for this collection" option enabled."
+Write-Verbose "Store the collections with the "use incremental updates for this collection option enabled."
 $Collections = @()
 
 Write-Verbose "Add device collection names to the collections array."
